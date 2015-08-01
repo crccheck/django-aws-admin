@@ -13,10 +13,7 @@ def favicon(request):
 
 
 urlpatterns = [
-    url(r'^admin/', include(admin.site.urls)),
-
-    url(r'^', include('aws_admin.urls',
-        namespace='aws_admin', app_name='aws_admin')),
+    url(r'^', include(admin.site.urls)),
 
     # HACK patterns
     url(r'^favicon.ico$', favicon),
