@@ -1,53 +1,16 @@
-Django Start App
+Django AWS Admin
 ================
 
-This is a boilerplate template for starting a standalong Django app. It comes
-with these amazing features:
+This is just an experiment on wrapping the AWS Web Console with the Django
+Admin.
 
-* a non-functional setup.py
-* example project for development that's Heroku-ready
-* a testing app for your app built into the example project
-* APL2 license
+Why?
+----
 
-Instructions for once you get started:
-
-Setup
------
-
-::
-
-    pip install -r requirements.txt
+Mostly because managing security groups and tags can be a pain.
 
 
-Using Postgresql instead of Sqlite as your database::
+Prior Art
+---------
 
-    export DATABASE_URL='postgres:///aws_admin'
-
-
-
-Deploying to Heroku
--------------------
-
-Create a new app and give it a database::
-
-    $ heroku apps:create
-    $ heroku addons:add heroku-postgresql:dev
-    $ heroku config:set DJANGO_SETTINGS_MODULE=example_project.settings
-
-Promote the database to ``DATABASE_URL`` (this should happen automatically)::
-
-    $ heroku config | grep HEROKU_POSTGRESQL
-    HEROKU_POSTGRESQL_RED_URL: postgres://user3123:passkja83kd8@ec2-117-21-174-214.compute-1.amazonaws.com:6212/db982398
-    $ heroku pg:promote RED
-
-Install the pgbackups addon::
-
-    $ heroku addons:add pgbackups
-
-Migrate data from your local Postgresql to Heroku (https://devcenter.heroku.com/articles/heroku-postgres-import-export)::
-
-    $ pg_dump -Fc --no-acl --no-owner aws_admin > aws_admin.dump
-
-Upload ``aws_admin.dump`` someplace on the Internets and pull it into Heroku::
-
-    $ heroku pgbackups:restore DATABASE http://example.com/aws_admin.dump
+Django AWS Manager: https://github.com/jromich/django-aws-manager
