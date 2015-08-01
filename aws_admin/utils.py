@@ -4,7 +4,7 @@ from django.conf import settings
 from obj_update import obj_update_or_create
 import boto.ec2
 
-from aws_admin.models import Region, Instance
+from .models import Region, Instance
 
 
 logger = logging.getLogger(__name__)
@@ -20,30 +20,11 @@ def pull_ec2(region=None):
     )
     instances = conn.get_only_instances()
     for boto_instance in instances:
-        data = data_from_boto_ec2(boto_instance)
-        defaults = {
-            'name': data['tags'].get('Name'),
-            'region': region,
-            'data': data,
-        }
+        data = Instance.data_from_boto_ec2(boto_instance)
+        instance_id = data.pop('id')
         instance, __ = obj_update_or_create(
             Instance,
-            id=data['id'],
-            defaults=defaults,
+            id=instance_id,
+            defaults=data,
         )
         logger.debug(instance)
-
-
-def data_from_boto_ec2(boto_instance):
-    data = {k: v for k, v in boto_instance.__dict__.items() if not k.startswith('_')}
-    data.pop('block_device_mapping')
-    data.pop('interfaces')
-    data.pop('groups')
-    data.pop('region')
-    data.pop('connection')
-    return data
-
-
-# DELETEME
-if __name__ == '__main__':
-    pull_ec2()

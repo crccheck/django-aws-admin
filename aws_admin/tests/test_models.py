@@ -4,7 +4,6 @@ import mock
 
 from ..factories import InstanceFactory
 from ..models import Instance
-from ..utils import data_from_boto_ec2
 
 
 class InstanceTests(TestCase):
@@ -17,8 +16,12 @@ class InstanceTests(TestCase):
             groups='TODO',
             region='NOOP',
             connection='TODO',
+            tags={'Name': 'foobar'},
+            state_code=16,  # running
         )
-        # kind of more of a test of utils
-        data = data_from_boto_ec2(boto_data)
-        instance = InstanceFactory(id='i-1337', data=data)
+        data = Instance.data_from_boto_ec2(boto_data)
+        instance_id = data.pop('id')
+        instance = InstanceFactory(id=instance_id, **data)
         print instance
+        self.assertEqual(instance.id, boto_data.id)
+        self.assertEqual(instance.state, boto_data.state_code)

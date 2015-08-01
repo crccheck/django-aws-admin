@@ -39,3 +39,29 @@ class Instance(models.Model):
         if self.name:
             return '{} - {}'.format(self.id, self.name)
         return self.id
+
+    @staticmethod
+    def data_from_boto_ec2(boto_instance, region=None):
+        """
+        Transform information from boto to something Instance can consume.
+        """
+        # WIP
+        data = {k: v for k, v in boto_instance.__dict__.items() if not k.startswith('_')}
+        data.pop('block_device_mapping')
+        data.pop('interfaces')
+        data.pop('groups')
+        data.pop('region')
+        data.pop('connection')
+        # region
+        defaults = {
+            'id': data['id'],
+            'name': data['tags'].get('Name'),
+            'state': data['state_code'],
+            'data': data,
+        }
+        if region is None:
+            # TODO get region from data
+            pass
+        else:
+            defaults['region'] = region
+        return defaults
