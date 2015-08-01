@@ -183,3 +183,9 @@ LOGGING = {
         },
     },
 }
+
+
+# App settings
+
+AWS_ACCESS_KEY_ID = env.require('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = env.require('AWS_SECRET_ACCESS_KEY')
