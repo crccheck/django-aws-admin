@@ -1,0 +1,26 @@
+# Django generated files
+*.db
+media
+example_project/static_root
+
+
+# Private user files
+.env
+.agignore
+*.ipynb
+
+
+# Randomly generated files
+*.log
+*.pot
+*.pyc
+.DS_Store
+.sass-cache
+.ipynb_checkpoints
+
+
+# created during packaging
+*.egg-info
+build/
+dist/
+MANIFEST

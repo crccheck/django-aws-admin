@@ -1,0 +1,4 @@
+include setup.py README.* MANIFEST.in LICENSE
+recursive-include aws_admin *
+recursive-exclude aws_admin/tests *
+global-exclude *.pyc
