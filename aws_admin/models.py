@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 
-from django.core.urlresolvers import reverse
 from django.db import models
+from django_extensions.db.fields.json import JSONField
 
 
 class Region(models.Model):
@@ -19,3 +19,20 @@ class Region(models.Model):
 
     def __unicode__(self):
         return '{} ({})'.format(self.name, self.code)
+
+
+class Instance(models.Model):
+    id = models.CharField(max_length=20, primary_key=True)
+    region = models.ForeignKey(Region, related_name='instances')
+    name = models.CharField(max_length=255, blank=True, null=True)
+    # tags
+    # security groups
+    data = JSONField(blank=True, null=True)
+
+    # bookkeeping
+    updated = models.DateTimeField(auto_now=True)
+
+    def __unicode__(self):
+        if self.name:
+            return '{} - {}'.format(self.id, self.name)
+        return self.id
