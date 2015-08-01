@@ -5,15 +5,6 @@ from django_extensions.db.fields.json import JSONField
 
 
 class Region(models.Model):
-    # ap-northeast-1
-    # ap-southeast-1
-    # ap-southeast-2
-    # eu-central-1
-    # eu-west-1
-    # sa-east-1
-    # us-east-1
-    # us-west-1
-    # us-west-2
     code = models.SlugField(max_length=30, unique=True)
     name = models.CharField(max_length=55)
 
@@ -22,9 +13,21 @@ class Region(models.Model):
 
 
 class Instance(models.Model):
+    # http://boto.readthedocs.org/en/latest/ref/ec2.html#boto.ec2.instance.InstanceState
+    STATE_CHOICES = (
+        (0, 'pending'),
+        (16, 'running'),
+        (32, 'shutting-down'),
+        (48, 'terminated'),
+        (64, 'stopping'),
+        (80, 'stopped'),
+    )
     id = models.CharField(max_length=20, primary_key=True)
     region = models.ForeignKey(Region, related_name='instances')
     name = models.CharField(max_length=255, blank=True, null=True)
+    state = models.SmallIntegerField(choices=STATE_CHOICES,
+        blank=True, null=True)
+    launched = models.DateTimeField(blank=True, null=True)
     # tags
     # security groups
     data = JSONField(blank=True, null=True)

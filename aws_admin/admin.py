@@ -10,4 +10,4 @@ class RegionAdmin(admin.ModelAdmin):
 
 @admin.register(models.Instance)
 class InstanceAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('id', 'name', 'region')

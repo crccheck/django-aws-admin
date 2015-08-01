@@ -20,23 +20,28 @@ def pull_ec2(region=None):
     )
     instances = conn.get_only_instances()
     for boto_instance in instances:
-        data = {k: v for k, v in boto_instance.__dict__.items() if not k.startswith('_')}
-        data.pop('block_device_mapping')
-        data.pop('interfaces')
-        data.pop('groups')
-        data.pop('region')
-        data.pop('connection')
+        data = data_from_boto_ec2(boto_instance)
         defaults = {
-            'name': boto_instance.tags.get('Name'),
+            'name': data['tags'].get('Name'),
             'region': region,
             'data': data,
         }
         instance, __ = obj_update_or_create(
             Instance,
-            id=boto_instance.id,
+            id=data['id'],
             defaults=defaults,
         )
         logger.debug(instance)
+
+
+def data_from_boto_ec2(boto_instance):
+    data = {k: v for k, v in boto_instance.__dict__.items() if not k.startswith('_')}
+    data.pop('block_device_mapping')
+    data.pop('interfaces')
+    data.pop('groups')
+    data.pop('region')
+    data.pop('connection')
+    return data
 
 
 # DELETEME
