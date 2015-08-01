@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from django.test import TestCase
 import boto.ec2
 import mock
@@ -11,17 +13,21 @@ class InstanceTests(TestCase):
         boto_data = mock.MagicMock(
             spec=boto.ec2.instance,
             id='i-1337',
+            tags={'Name': 'foobar'},
+            state_code=16,  # running
+            launch_time='2015-08-01T18:41:23.000Z',
             block_device_mapping='TODO',
             interfaces='TODO',
             groups='TODO',
             region='NOOP',
             connection='TODO',
-            tags={'Name': 'foobar'},
-            state_code=16,  # running
         )
         data = Instance.data_from_boto_ec2(boto_data)
         instance_id = data.pop('id')
         instance = InstanceFactory(id=instance_id, **data)
-        print instance
+        # refresh model cache
+        instance = Instance.objects.get(id=instance.id)
         self.assertEqual(instance.id, boto_data.id)
+        self.assertEqual(instance.name, 'foobar')
         self.assertEqual(instance.state, boto_data.state_code)
+        self.assertEqual(instance.launched.isoformat(), '2015-08-01T18:41:23+00:00')

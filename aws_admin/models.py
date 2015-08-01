@@ -54,9 +54,10 @@ class Instance(models.Model):
         data.pop('connection')
         # region
         defaults = {
-            'id': data['id'],
+            'id': boto_instance.id,
             'name': data['tags'].get('Name'),
-            'state': data['state_code'],
+            'state': boto_instance.state_code,
+            'launched': data['launch_time'],
             'data': data,
         }
         if region is None:
