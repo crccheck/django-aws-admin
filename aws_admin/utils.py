@@ -36,6 +36,26 @@ def pull_ec2(region=None):
         logger.debug(instance)
 
 
+def grant_to_rules(rule, sg_cache):
+    # WISHLIST don't inject `sg_cache`
+    defaults = dict(
+        protocol=rule.ip_protocol,
+        port_range=[int(rule.from_port or 0), int(rule.to_port or 0)],
+    )
+    rules = []
+    for grant in rule.grants:
+        if grant.group_id:
+            defaults['source_group'] = sg_cache[grant.group_id]
+            defaults['cidr'] = None
+        else:
+            defaults['source_group'] = None
+            defaults['cidr'] = grant.cidr_ip
+
+        sg_rule, __ = SecurityGroupRule.objects.get_or_create(**defaults)
+        rules.append(sg_rule)
+    return rules
+
+
 def pull_security_groups(region=None):
     if region is None:
         region = Region.objects.get(id=1)  # as defined by our initial data
@@ -65,38 +85,11 @@ def pull_security_groups(region=None):
     # we don't know about yet
     for group in rs:
         security_group = sg_cache[group.id]
-        # TODO don't do unnecessary SQL
-        security_group.rules.clear()
+        security_group.rules.clear()  # TODO don't do unnecessary SQL
         for rule in group.rules:
-            defaults = dict(
-                protocol=rule.ip_protocol,
-                port_range=[int(rule.from_port or 0), int(rule.to_port or 0)],
-            )
-            for grant in rule.grants:
-                if grant.group_id:
-                    defaults['source_group'] = sg_cache[grant.group_id]
-                    defaults['cidr'] = None
-                else:
-                    defaults['source_group'] = None
-                    defaults['cidr'] = grant.cidr_ip
-
-                sg_rule, __ = SecurityGroupRule.objects.get_or_create(**defaults)
-                security_group.rules.add(sg_rule)
-
-        # TODO don't do unnecessary SQL
-        security_group.rules_egress.clear()
+            rules = grant_to_rules(rule, sg_cache)
+            security_group.rules.add(*rules)
+        security_group.rules_egress.clear()  # TODO don't do unnecessary SQL
         for rule in group.rules_egress:
-            defaults = dict(
-                protocol=rule.ip_protocol,
-                port_range=[int(rule.from_port or 0), int(rule.to_port or 0)],
-            )
-            for grant in rule.grants:
-                if grant.group_id:
-                    defaults['source_group'] = sg_cache[grant.group_id]
-                    defaults['cidr'] = None
-                else:
-                    defaults['source_group'] = None
-                    defaults['cidr'] = grant.cidr_ip
-
-                sg_rule, __ = SecurityGroupRule.objects.get_or_create(**defaults)
-                security_group.rules_egress.add(sg_rule)
+            rules = grant_to_rules(rule, sg_cache)
+            security_group.rules_egress.add(*rules)
