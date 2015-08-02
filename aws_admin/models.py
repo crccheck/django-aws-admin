@@ -84,10 +84,10 @@ class SecurityGroup(models.Model):
     description = models.CharField(max_length=255, blank=True, null=True)
     # owner
     region = models.ForeignKey(Region, related_name='sgs')
-    rules = models.ManyToManyField('SecurityGroupRules',
+    rules = models.ManyToManyField('SecurityGroupRule',
         related_name='sgs_inbound',
         help_text='Inbound')
-    rules_egress = models.ManyToManyField('SecurityGroupRules',
+    rules_egress = models.ManyToManyField('SecurityGroupRule',
         related_name='sgs_outbound',
         help_text='Outbound')
     tags = JSONField(null=True, blank=True)
@@ -99,16 +99,27 @@ class SecurityGroup(models.Model):
         return self.name
 
 
-class SecurityGroupRules(models.Model):
-    """WIP"""
+class SecurityGroupRule(models.Model):
+    """WIP
+
+    Use a model instead of denormalized like tags for this use case: If there's
+    a rule for an IP, changing the IP should affect all security groups that
+    referenced that IP.
+    """
     PROTOCOL_CHOICES = (
         ('tcp', 'tcp'),
         ('udp', 'udp'),
         ('icmp', 'icmp'),
     )
-    protocol = models.CharField(max_length=4, choices=PROTOCOL_CHOICES, default='tcp')
+    protocol = models.CharField(max_length=4, choices=PROTOCOL_CHOICES)
     port_range = models.CommaSeparatedIntegerField(max_length=30,
         help_text='min, max')
-    cidr = models.CharField(max_length=50)
-    source_group = models.ForeignKey('self')
+    cidr = models.CharField(max_length=50, null=True, blank=True)
+    source_group = models.ForeignKey(SecurityGroup, null=True, blank=True)
     # either cidr or source_group
+
+    description = models.TextField(null=True, blank=True,
+        help_text='User Description')
+
+    class Meta:
+        unique_together = ('protocol', 'port_range', 'cidr', 'source_group')
