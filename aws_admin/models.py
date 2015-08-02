@@ -39,7 +39,7 @@ class Instance(models.Model):
         blank=True, null=True)
     launched = models.DateTimeField(blank=True, null=True)
     tags = JSONField(null=True, blank=True)
-    security_groups = models.ManyToManyField('SecurityGroup')
+    security_groups = models.ManyToManyField('SecurityGroup', related_name='instances')
     data = JSONField(blank=True, null=True)
 
     # bookkeeping
@@ -93,10 +93,12 @@ class SecurityGroup(models.Model):
     tags = JSONField(null=True, blank=True)
     vpc = models.ForeignKey(VPC, related_name='sgs', blank=True, null=True)
 
+    class Meta:
+        ordering = ('name', )
+
     def __unicode__(self):
-        if 'Name' in self.tags:
-            return self.tags['Name']
-        return self.name
+        name = self.tags['Name'] if 'Name' in self.tags else self.name
+        return '{} ({})'.format(self.id, name)
 
 
 class SecurityGroupRule(models.Model):

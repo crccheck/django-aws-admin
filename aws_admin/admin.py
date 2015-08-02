@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.db.models import Count
 
 from . import models
 
@@ -16,9 +17,24 @@ class InstanceAdmin(admin.ModelAdmin):
         'security_groups', 'tags')
 
 
+class InstanceInline(admin.TabularInline):
+    model = models.Instance.security_groups.through
+    extra = 0
+
+
 @admin.register(models.SecurityGroup)
 class SecurityGroupAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'vpc', 'description')
+    def get_queryset(self, request):
+        qs = super(SecurityGroupAdmin, self).get_queryset(request)
+        return qs.annotate(instance_count=Count('instances'))
+
+    def instance_count(self, obj):
+        return obj.instance_count
+    instance_count.short_description = 'Instances'
+
+    list_display = ('id', 'name', 'vpc', 'description', 'instance_count')
     readonly_fields = ('tags', 'region', 'id', 'name', 'description', 'rules',
         'rules_egress', 'vpc')
+    search_fields = ('id', 'name')
     # TODO how do I do an inline not to the through table?
+    inlines = [InstanceInline]
