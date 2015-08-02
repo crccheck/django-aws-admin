@@ -40,6 +40,7 @@ class Instance(models.Model):
     launched = models.DateTimeField(blank=True, null=True)
     tags = JSONField(null=True, blank=True)
     security_groups = models.ManyToManyField('SecurityGroup', related_name='instances')
+    vpc = models.ForeignKey(VPC, related_name='instances', blank=True, null=True)
     data = JSONField(blank=True, null=True)
 
     # bookkeeping
@@ -51,12 +52,12 @@ class Instance(models.Model):
         return self.id
 
     @staticmethod
-    def data_from_boto_ec2(boto_instance, region=None):
+    def data_from_boto_ec2(boto_data, region=None):
         """
         Transform information from boto to something Instance can consume.
         """
         # WIP
-        data = {k: v for k, v in boto_instance.__dict__.items() if not k.startswith('_')}
+        data = {k: v for k, v in boto_data.__dict__.items() if not k.startswith('_')}
         data.pop('block_device_mapping')
         data.pop('interfaces')
         data.pop('groups')
@@ -64,12 +65,14 @@ class Instance(models.Model):
         data.pop('connection')
         # region
         defaults = {
-            'id': boto_instance.id,
+            'id': boto_data.id,
             'name': data['tags'].get('Name'),
-            'state': boto_instance.state_code,
+            'state': boto_data.state_code,
             'launched': data['launch_time'],
             'data': data,
         }
+        if boto_data.vpc_id:
+            defaults['vpc'] = VPC.objects.get(pk=boto_data.vpc_id)
         if region is None:
             # TODO get region from data
             pass

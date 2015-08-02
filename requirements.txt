@@ -4,7 +4,7 @@ project-runpy==0.3.1
 django-extensions==1.5.5
 
 boto==2.38.0
-dj-obj-update==0.2.0
+dj-obj-update==0.2.1
 
 
 # Deployment
