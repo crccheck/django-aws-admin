@@ -87,14 +87,12 @@ def pull_security_groups(region=None):
     sg_cache = {}
     rs = conn.get_all_security_groups()
     for group in rs:
-        # FIXME just use vpc_id
-        vpc, __ = VPC.objects.get_or_create(id=group.vpc_id, defaults={'region': region})
         defaults = {
             'description': group.description,
             'name': group.name,
             'region': region,
             'tags': group.tags,
-            'vpc': vpc,
+            'vpc_id': group.vpc_id,
         }
         security_group, __ = obj_update_or_create(
             SecurityGroup,
