@@ -21,3 +21,4 @@ class SecurityGroupAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'vpc', 'description')
     readonly_fields = ('tags', 'region', 'id', 'name', 'description', 'rules',
         'rules_egress', 'vpc')
+    # TODO how do I do an inline not to the through table?

@@ -123,3 +123,6 @@ class SecurityGroupRule(models.Model):
 
     class Meta:
         unique_together = ('protocol', 'port_range', 'cidr', 'source_group')
+
+    def __unicode__(self):
+        return '{} {} {}'.format(self.protocol, self.port_range, self.cidr or self.source_group)

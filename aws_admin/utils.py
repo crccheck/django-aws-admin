@@ -68,7 +68,6 @@ def pull_security_groups(region=None):
         # TODO don't do unnecessary SQL
         security_group.rules.clear()
         for rule in group.rules:
-            print rule.from_port, rule.to_port
             defaults = dict(
                 protocol=rule.ip_protocol,
                 port_range=[int(rule.from_port or 0), int(rule.to_port or 0)],
@@ -81,13 +80,12 @@ def pull_security_groups(region=None):
                     defaults['source_group'] = None
                     defaults['cidr'] = grant.cidr_ip
 
-                print defaults
                 sg_rule, __ = SecurityGroupRule.objects.get_or_create(**defaults)
                 security_group.rules.add(sg_rule)
 
         # TODO don't do unnecessary SQL
         security_group.rules_egress.clear()
-        for rule in group.rules:
+        for rule in group.rules_egress:
             defaults = dict(
                 protocol=rule.ip_protocol,
                 port_range=[int(rule.from_port or 0), int(rule.to_port or 0)],
