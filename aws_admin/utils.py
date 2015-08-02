@@ -3,11 +3,31 @@ import logging
 from django.conf import settings
 from obj_update import obj_update_or_create
 import boto.ec2
+import boto.vpc
 
 from .models import Region, Instance, SecurityGroup, SecurityGroupRule, VPC
 
 
 logger = logging.getLogger(__name__)
+
+
+def pull_vpcs(region=None):
+    if region is None:
+        region = Region.objects.get(id=1)  # as defined by our initial data
+    conn = boto.vpc.connect_to_region(
+        region.code,
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+    )
+    for boto_vpc in conn.get_all_vpcs():
+        defaults = dict(
+            region=region,
+            name=boto_vpc.tags.get('Name'),
+            cidr=boto_vpc.cidr_block,
+            state=boto_vpc.state,
+            tags=boto_vpc.tags,
+        )
+        obj_update_or_create(VPC, id=boto_vpc.id, defaults=defaults)
 
 
 def pull_ec2(region=None):

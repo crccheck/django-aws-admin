@@ -17,6 +17,9 @@ class VPC(models.Model):
     id = models.CharField(max_length=20, primary_key=True)
     region = models.ForeignKey(Region, related_name='vpcs')
     name = models.CharField(max_length=255)
+    cidr = models.CharField(max_length=30, null=True, blank=True)
+    state = models.CharField(max_length=55, null=True, blank=True)
+    tags = JSONField(blank=True, null=True)
 
     def __unicode__(self):
         return '{} ({})'.format(self.name, self.id)

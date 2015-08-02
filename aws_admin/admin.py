@@ -9,12 +9,17 @@ class RegionAdmin(admin.ModelAdmin):
     pass
 
 
+@admin.register(models.VPC)
+class VPCAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'cidr', 'state')
+
+
 @admin.register(models.Instance)
 class InstanceAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'region', 'state', 'launched')
+    list_display = ('id', 'name', 'region', 'state', 'vpc', 'launched')
     list_filter = ('region', 'state')
     readonly_fields = ('id', 'region', 'name', 'state', 'data', 'launched',
-        'security_groups', 'tags')
+        'security_groups', 'tags', 'vpc')
 
 
 class InstanceInline(admin.TabularInline):
