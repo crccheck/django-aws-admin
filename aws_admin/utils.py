@@ -20,13 +20,19 @@ def pull_ec2(region=None):
     )
     instances = conn.get_only_instances()
     for boto_instance in instances:
-        data = Instance.data_from_boto_ec2(boto_instance)
+        data = Instance.data_from_boto_ec2(boto_instance, region=region)
         instance_id = data.pop('id')
         instance, __ = obj_update_or_create(
             Instance,
             id=instance_id,
             defaults=data,
         )
+        # TODO don't do unnecessary SQL
+        instance.security_groups.clear()
+        for group in boto_instance.groups:
+            security_group, __ = SecurityGroup.objects.get_or_create(
+                id=group.id, region=region)
+            instance.security_groups.add(security_group)
         logger.debug(instance)
 
 
