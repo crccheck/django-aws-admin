@@ -4,14 +4,24 @@ from django.db.models import Count
 from . import models
 
 
+class InstanceCountMixin(object):
+    def get_queryset(self, request):
+        qs = super(InstanceCountMixin, self).get_queryset(request)
+        return qs.annotate(instance_count=Count('instances'))
+
+    def instance_count(self, obj):
+        return obj.instance_count
+    instance_count.short_description = 'Instances'
+
+
 @admin.register(models.Region)
 class RegionAdmin(admin.ModelAdmin):
     pass
 
 
 @admin.register(models.VPC)
-class VPCAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'cidr', 'state')
+class VPCAdmin(InstanceCountMixin, admin.ModelAdmin):
+    list_display = ('id', 'name', 'cidr', 'state', 'instance_count')
 
 
 @admin.register(models.Instance)
@@ -28,15 +38,7 @@ class InstanceInline(admin.TabularInline):
 
 
 @admin.register(models.SecurityGroup)
-class SecurityGroupAdmin(admin.ModelAdmin):
-    def get_queryset(self, request):
-        qs = super(SecurityGroupAdmin, self).get_queryset(request)
-        return qs.annotate(instance_count=Count('instances'))
-
-    def instance_count(self, obj):
-        return obj.instance_count
-    instance_count.short_description = 'Instances'
-
+class SecurityGroupAdmin(InstanceCountMixin, admin.ModelAdmin):
     list_display = ('id', 'name', 'vpc', 'description', 'instance_count')
     readonly_fields = ('tags', 'region', 'id', 'name', 'description', 'rules',
         'rules_egress', 'vpc')

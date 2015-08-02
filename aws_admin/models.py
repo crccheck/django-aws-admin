@@ -21,6 +21,10 @@ class VPC(models.Model):
     state = models.CharField(max_length=55, null=True, blank=True)
     tags = JSONField(blank=True, null=True)
 
+    class Meta:
+        verbose_name = 'VPC'
+        ordering = ('state', )
+
     def __unicode__(self):
         return '{} ({})'.format(self.name, self.id)
 
@@ -43,7 +47,8 @@ class Instance(models.Model):
     launched = models.DateTimeField(blank=True, null=True)
     tags = JSONField(null=True, blank=True)
     security_groups = models.ManyToManyField('SecurityGroup', related_name='instances')
-    vpc = models.ForeignKey(VPC, related_name='instances', blank=True, null=True)
+    vpc = models.ForeignKey(VPC, related_name='instances',
+        blank=True, null=True)
     data = JSONField(blank=True, null=True)
 
     # bookkeeping
