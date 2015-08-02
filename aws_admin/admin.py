@@ -45,3 +45,18 @@ class SecurityGroupAdmin(InstanceCountMixin, admin.ModelAdmin):
     search_fields = ('id', 'name')
     # TODO how do I do an inline not to the through table?
     inlines = [InstanceInline]
+
+
+@admin.register(models.SecurityGroupRule)
+class SecurityGroupRuleAdmin(admin.ModelAdmin):
+    list_display = ('protocol', 'port_range', 'cidr', 'source_group', 'description',
+        'inbound')
+    list_filter = ('protocol', )
+    ordering = ('protocol', 'cidr')
+
+    def get_queryset(self, request):
+        qs = super(SecurityGroupRuleAdmin, self).get_queryset(request)
+        return qs.annotate(inbound_count=Count('sgs_inbound'))
+
+    def inbound(self, obj):
+        return obj.inbound_count
