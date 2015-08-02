@@ -12,6 +12,16 @@ class Region(models.Model):
         return '{} ({})'.format(self.name, self.code)
 
 
+class VPC(models.Model):
+    """WIP"""
+    id = models.CharField(max_length=20, primary_key=True)
+    region = models.ForeignKey(Region, related_name='vpcs')
+    name = models.CharField(max_length=255)
+
+    def __unicode__(self):
+        return '{} ({})'.format(self.name, self.id)
+
+
 class Instance(models.Model):
     # http://boto.readthedocs.org/en/latest/ref/ec2.html#boto.ec2.instance.InstanceState
     STATE_CHOICES = (
@@ -28,8 +38,8 @@ class Instance(models.Model):
     state = models.SmallIntegerField(choices=STATE_CHOICES,
         blank=True, null=True)
     launched = models.DateTimeField(blank=True, null=True)
-    # tags
-    # security groups
+    tags = JSONField(null=True, blank=True)
+    security_groups = models.ManyToManyField('SecurityGroup')
     data = JSONField(blank=True, null=True)
 
     # bookkeeping
@@ -66,3 +76,39 @@ class Instance(models.Model):
         else:
             defaults['region'] = region
         return defaults
+
+
+class SecurityGroup(models.Model):
+    id = models.CharField(max_length=20, primary_key=True)
+    name = models.CharField(max_length=255, blank=True, null=True)
+    description = models.CharField(max_length=255, blank=True, null=True)
+    # owner
+    region = models.ForeignKey(Region, related_name='sgs')
+    rules = models.ManyToManyField('SecurityGroupRules',
+        related_name='sgs_inbound',
+        help_text='Inbound')
+    rules_egress = models.ManyToManyField('SecurityGroupRules',
+        related_name='sgs_outbound',
+        help_text='Outbound')
+    tags = JSONField(null=True, blank=True)
+    vpc = models.ForeignKey(VPC, related_name='sgs', blank=True, null=True)
+
+    def __unicode__(self):
+        if 'Name' in self.tags:
+            return self.tags['Name']
+        return self.name
+
+
+class SecurityGroupRules(models.Model):
+    """WIP"""
+    PROTOCOL_CHOICES = (
+        ('tcp', 'tcp'),
+        ('udp', 'udp'),
+        ('icmp', 'icmp'),
+    )
+    protocol = models.CharField(max_length=4, choices=PROTOCOL_CHOICES, default='tcp')
+    port_range = models.CommaSeparatedIntegerField(max_length=30,
+        help_text='min, max')
+    cidr = models.CharField(max_length=50)
+    source_group = models.ForeignKey('self')
+    # either cidr or source_group

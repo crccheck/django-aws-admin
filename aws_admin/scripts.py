@@ -1,5 +1,7 @@
-from aws_admin.utils import pull_ec2
+from aws_admin.utils import pull_ec2, pull_security_groups
 
 
 if __name__ == '__main__':
-    pull_ec2()
+    if False:
+        pull_ec2()
+    pull_security_groups()
